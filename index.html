@@ -208,10 +208,19 @@
   /* ----------------------------------------------------------- compose ---- */
   .compose-modal{
     position:fixed; bottom:0; right:2rem; width:420px; max-width:92vw; background:var(--panel);
-    border-radius:12px 12px 0 0; box-shadow:var(--shadow-lg); z-index:50; display:none;
-    max-height:80vh; display:none; flex-direction:column;
+    border-radius:12px 12px 0 0; box-shadow:var(--shadow-lg); z-index:70; display:none;
+    max-height:80vh; flex-direction:column;
   }
   .compose-modal.open{ display:flex; }
+
+  .fab-compose{
+    display:none; position:fixed; right:1.25rem; bottom:1.25rem; z-index:40;
+    width:56px; height:56px; border-radius:50%; border:none; cursor:pointer;
+    background:var(--compose-bg); color:var(--compose-ink); box-shadow:var(--shadow-lg);
+    align-items:center; justify-content:center;
+  }
+  .fab-compose svg{ width:24px; height:24px; }
+  @media (max-width:760px){ .fab-compose{ display:flex; } }
   .compose-head{
     display:flex; justify-content:space-between; align-items:center; padding:0.8rem 1rem;
     background:var(--read-row); border-radius:12px 12px 0 0; font-size:0.85rem; font-weight:500;
@@ -323,6 +332,10 @@
 </div>
 
 <div class="backdrop" id="backdrop"></div>
+
+<button class="fab-compose" id="fabCompose" aria-label="Compose">
+  <svg viewBox="0 0 24 24"><use href="#ic-pencil"/></svg>
+</button>
 
 <div class="shell">
   <aside class="sidebar" id="sidebar">
@@ -649,19 +662,6 @@
     if (!ev.target.closest('.accountwrap')) accountMenu.classList.remove('open');
   });
 
-  /* compose modal */
-  var composeModal = document.getElementById('composeModal');
-  var backdrop = document.getElementById('backdrop');
-  function openCompose(){ composeModal.classList.add('open'); backdrop.classList.add('open'); accountMenu.classList.remove('open'); }
-  function closeCompose(){ composeModal.classList.remove('open'); backdrop.classList.remove('open'); }
-  document.getElementById('composeBtn').addEventListener('click', openCompose);
-  document.getElementById('composeFromMenu').addEventListener('click', openCompose);
-  document.getElementById('composeClose').addEventListener('click', closeCompose);
-  document.getElementById('sendBtn').addEventListener('click', function(){
-    window.open(LINKEDIN_URL, '_blank');
-    closeCompose();
-  });
-
   /* sidebar: a real slide-in drawer on phones, an icon-rail toggle on desktop */
   var sidebar = document.getElementById('sidebar');
   function isPhone(){ return window.matchMedia('(max-width:760px)').matches; }
@@ -670,11 +670,31 @@
   }
   document.getElementById('menuToggle').addEventListener('click', function(){
     if (isPhone()){
+      closeCompose();
       sidebar.classList.toggle('drawer-open');
       backdrop.classList.toggle('open', sidebar.classList.contains('drawer-open'));
     } else {
       sidebar.classList.toggle('collapsed-force');
     }
+  });
+
+  /* compose modal */
+  var composeModal = document.getElementById('composeModal');
+  var backdrop = document.getElementById('backdrop');
+  function openCompose(){
+    closeDrawer(); // the drawer sits in front of the modal on phones — never leave both open
+    composeModal.classList.add('open');
+    backdrop.classList.add('open');
+    accountMenu.classList.remove('open');
+  }
+  function closeCompose(){ composeModal.classList.remove('open'); backdrop.classList.remove('open'); }
+  document.getElementById('composeBtn').addEventListener('click', openCompose);
+  document.getElementById('composeFromMenu').addEventListener('click', openCompose);
+  document.getElementById('fabCompose').addEventListener('click', openCompose);
+  document.getElementById('composeClose').addEventListener('click', closeCompose);
+  document.getElementById('sendBtn').addEventListener('click', function(){
+    window.open(LINKEDIN_URL, '_blank');
+    closeCompose();
   });
   backdrop.addEventListener('click', function(){
     closeCompose();
